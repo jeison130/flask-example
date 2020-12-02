@@ -23,7 +23,7 @@ block content %}
       <td>{{ usuario[2] }}</td>
       <td>{{ usuario[3] }}</td>
       <td>
-          <button class="btn">Editar</button>
+          <a class="btn" href="{{ url_for('editar_usuario', id = usuario[0]) }}">Editar</a>
           <button class="btn btn-danger">Eliminar</button>
       </td>
     </tr>
