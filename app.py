@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 
 app = Flask(__name__)
@@ -9,6 +9,31 @@ db = sqlite3.connect('data.db', check_same_thread=False)
 @app.route('/', methods=['GET']) # / significa la ruta raiz
 def index():
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST']) 
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    usuario = db.execute("""select * from usuarios where 
+        email = ? and password = ?""", (email, password,)).fetchone()
+    
+    if usuario is None:
+        flash('Las credenciales no son válidas', 'error')
+        return redirect(request.url)
+
+    session['usuario'] = usuario
+
+    return redirect(url_for('index'))
+
+@app.route('/logout') 
+def logout():
+    session.clear()
+
+    return redirect(url_for('login'))
 
 @app.route('/saludo/<nombre>/<int:edad>') # Nombre
 def saludar(nombre, edad):
@@ -36,6 +61,9 @@ def sumar():
 
 @app.route('/usuarios')
 def usuarios():
+    if not 'usuario' in session:
+        return redirect(url_for('login'))
+
     usuarios = db.execute('select * from usuarios')
 
     usuarios = usuarios.fetchall()
